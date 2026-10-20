@@ -27,7 +27,7 @@
 #define PADDLE_HEIGHT BALL_SIZE * 8.0f
 #define PADDLE_SPEED  BALL_SPEED * 0.85f
 
-#define SND_HIT_VOLUME 0.15f
+#define SND_HIT_VOLUME   0.15f
 #define SND_SCORE_VOLUME 0.15f
 
 int get_input_axis(SDL_Keycode negative, SDL_Keycode positive)
