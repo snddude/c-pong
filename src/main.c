@@ -27,6 +27,9 @@
 #define PADDLE_HEIGHT BALL_SIZE * 8.0f
 #define PADDLE_SPEED  BALL_SPEED * 0.85f
 
+#define SND_HIT_VOLUME 0.15f
+#define SND_SCORE_VOLUME 0.15f
+
 int get_input_axis(SDL_Keycode negative, SDL_Keycode positive)
 {
     const bool *keys = SDL_GetKeyboardState(NULL);
@@ -149,6 +152,7 @@ int main(void)
         return EXIT_FAILURE;
     }
     SDL_ResumeAudioStreamDevice(snd_hit_stream);
+    SDL_SetAudioStreamGain(snd_hit_stream, SND_HIT_VOLUME);
 
     snd_score_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &snd_score_spec, NULL, NULL);
     if (snd_score_stream == NULL)
@@ -163,6 +167,7 @@ int main(void)
         return EXIT_FAILURE;
     }
     SDL_ResumeAudioStreamDevice(snd_score_stream);
+    SDL_SetAudioStreamGain(snd_score_stream, SND_SCORE_VOLUME);
 
     SDL_AddTimer(BALL_COOLDOWN, start_ball, &ball_on_cooldown);
 
