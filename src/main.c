@@ -162,12 +162,14 @@ int main(void)
         {
             ball.x = left_paddle.x + BALL_SIZE + 1.0f;
             ball_dx *= -1;
+            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
         }
 
         if (SDL_HasRectIntersectionFloat(&ball, &right_paddle))
         {
             ball.x = right_paddle.x - BALL_SIZE - 1.0f;
             ball_dx *= -1;
+            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
         }
 
         if (ball.y <= 0.0f || ball.y + BALL_SIZE >= HEIGHT)
