@@ -40,6 +40,12 @@ uint32_t start_ball(void *userdata, SDL_TimerID timerID, Uint32 interval)
     return 0;
 }
 
+void play_audio_stream(SDL_AudioStream *stream, uint8_t *data, uint32_t data_len)
+{
+    if (SDL_GetAudioStreamQueued(stream) < (int)data_len)
+        SDL_PutAudioStreamData(stream, data, data_len);
+}
+
 int main(void)
 {
     uint8_t *snd_hit_data = NULL;
@@ -167,9 +173,7 @@ int main(void)
         if (ball.y <= 0.0f || ball.y + BALL_SIZE >= HEIGHT)
         {
             ball_dy *= -1;
-
-            if (SDL_GetAudioStreamQueued(snd_hit_stream) < (int)snd_hit_data_len)
-                SDL_PutAudioStreamData(snd_hit_stream, snd_hit_data, snd_hit_data_len);
+            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
         }
 
         if (!ball_on_cooldown)
