@@ -30,6 +30,8 @@
 #define SND_HIT_VOLUME   0.25f
 #define SND_SCORE_VOLUME 0.15f
 
+#define EXIT_ERR { exit_code = EXIT_FAILURE; goto exit; }
+
 int get_input_axis(SDL_Keycode negative, SDL_Keycode positive)
 {
     const bool *keys = SDL_GetKeyboardState(NULL);
@@ -51,6 +53,8 @@ void play_audio_stream(SDL_AudioStream *stream, uint8_t *data, uint32_t data_len
 
 int main(void)
 {
+    uint8_t exit_code = EXIT_SUCCESS;
+
     uint8_t *snd_hit_data = NULL;
     uint8_t *snd_score_data = NULL;
     uint32_t snd_hit_data_len = 0;
@@ -100,55 +104,40 @@ int main(void)
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
         SDL_Log("SDL_Init() failed: %s", SDL_GetError());
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
 
     window = SDL_CreateWindow(TITLE, WIDTH, HEIGHT, 0);
     if (window == NULL)
     {
         SDL_Log("SDL_CreateWindow() failed: %s", SDL_GetError());
-        SDL_Quit();
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
 
     renderer = SDL_CreateRenderer(window, NULL);
     if (renderer == NULL)
     {
         SDL_Log("SDL_CreateRenderer() failed: %s", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return EXIT_FAILURE;        
+        EXIT_ERR;  
     }
 
     if (!SDL_LoadWAV("res/sound/hit.wav", &snd_hit_spec, &snd_hit_data, &snd_hit_data_len))
     {
         SDL_Log("SDL_LoadWAV() failed: %s", SDL_GetError());
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
 
     if (!SDL_LoadWAV("res/sound/score.wav", &snd_score_spec, &snd_score_data, &snd_score_data_len))
     {
         SDL_Log("SDL_LoadWAV() failed: %s", SDL_GetError());
-        SDL_free(snd_hit_data);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
 
     snd_hit_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &snd_hit_spec, NULL, NULL);
     if (snd_hit_stream == NULL)
     {
         SDL_Log("SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
-        SDL_free(snd_hit_data);
-        SDL_free(snd_score_data);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
     SDL_ResumeAudioStreamDevice(snd_hit_stream);
     SDL_SetAudioStreamGain(snd_hit_stream, SND_HIT_VOLUME);
@@ -157,13 +146,7 @@ int main(void)
     if (snd_score_stream == NULL)
     {
         SDL_Log("SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
-        SDL_DestroyAudioStream(snd_hit_stream);
-        SDL_free(snd_hit_data);
-        SDL_free(snd_score_data);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return EXIT_FAILURE;
+        EXIT_ERR;
     }
     SDL_ResumeAudioStreamDevice(snd_score_stream);
     SDL_SetAudioStreamGain(snd_score_stream, SND_SCORE_VOLUME);
@@ -284,5 +267,5 @@ exit:
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    return EXIT_SUCCESS;
+    return exit_code;
 }
