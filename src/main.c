@@ -64,6 +64,7 @@ int main(void)
     SDL_Renderer *renderer = NULL;
     
     SDL_AudioSpec snd_hit_spec;
+    SDL_AudioStream *snd_hit_stream = NULL;
 
     SDL_FRect ball = {
         .w = BALL_SIZE,
@@ -115,6 +116,17 @@ int main(void)
         SDL_Quit();
         return EXIT_FAILURE;
     }
+
+    snd_hit_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &snd_hit_spec, NULL, NULL);
+    if (snd_hit_stream == NULL)
+    {
+        SDL_Log("SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return EXIT_FAILURE;
+    }
+    SDL_ResumeAudioStreamDevice(snd_hit_stream);
 
     SDL_AddTimer(BALL_COOLDOWN, start_ball, &ball_on_cooldown);
 
