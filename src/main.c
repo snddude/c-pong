@@ -42,6 +42,9 @@ uint32_t start_ball(void *userdata, SDL_TimerID timerID, Uint32 interval)
 
 int main(void)
 {
+    uint8_t *snd_hit_data = NULL;
+    uint32_t snd_hit_data_len = 0;
+
     uint32_t left_score = 0;
     uint32_t right_score = 0;
     uint64_t last = 0;
@@ -59,6 +62,8 @@ int main(void)
     SDL_Event event = {0};
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
+    
+    SDL_AudioSpec snd_hit_spec;
 
     SDL_FRect ball = {
         .w = BALL_SIZE,
@@ -79,7 +84,7 @@ int main(void)
         .y = HEIGHT / 2.0f - PADDLE_HEIGHT / 2.0f
     };
 
-    if (!SDL_Init(SDL_INIT_VIDEO))
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
         SDL_Log("SDL_Init() failed: %s", SDL_GetError());
         return EXIT_FAILURE;
@@ -100,6 +105,15 @@ int main(void)
         SDL_DestroyWindow(window);
         SDL_Quit();
         return EXIT_FAILURE;        
+    }
+
+    if (!SDL_LoadWAV("res/sound/hit.wav", &snd_hit_spec, &snd_hit_data, &snd_hit_data_len))
+    {
+        SDL_Log("SDL_LoadWAV() failed: %s", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return EXIT_FAILURE;
     }
 
     SDL_AddTimer(BALL_COOLDOWN, start_ball, &ball_on_cooldown);
