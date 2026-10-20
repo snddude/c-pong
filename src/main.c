@@ -165,7 +165,12 @@ int main(void)
         }
 
         if (ball.y <= 0.0f || ball.y + BALL_SIZE >= HEIGHT)
+        {
             ball_dy *= -1;
+
+            if (SDL_GetAudioStreamQueued(snd_hit_stream) < (int)snd_hit_data_len)
+                SDL_PutAudioStreamData(snd_hit_stream, snd_hit_data, snd_hit_data_len);
+        }
 
         if (!ball_on_cooldown)
         {
