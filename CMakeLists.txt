@@ -5,7 +5,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist)
 
 set(SDL_GPU OFF)
 set(SDL_TRAY OFF)
-set(SDL_AUDIO OFF)
 set(SDL_POWER OFF)
 set(SDL_STATIC ON)
 set(SDL_CAMERA OFF)
@@ -21,6 +20,8 @@ set(SDL_NOTIFICATION OFF)
 add_subdirectory(vendor/SDL)
 
 file(GLOB_RECURSE SRCS ./src/*.c)
+file(COPY res DESTINATION ${CMAKE_BINARY_DIR}/dist)
+
 add_executable(${PROJECT_NAME} ${SRCS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ./include/)
