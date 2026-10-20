@@ -52,10 +52,9 @@ void play_audio_stream(SDL_AudioStream *stream, uint8_t *data, uint32_t data_len
 int main(void)
 {
     uint8_t *snd_hit_data = NULL;
-    uint32_t snd_hit_data_len = 0;
     uint8_t *snd_score_data = NULL;
+    uint32_t snd_hit_data_len = 0;
     uint32_t snd_score_data_len = 0;
-    
     uint32_t left_score = 0;
     uint32_t right_score = 0;
     uint64_t last = 0;
