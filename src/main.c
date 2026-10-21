@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <SDL3/SDL.h>
 
+#include "sound.h"
+
 #define TITLE      "Pong"
 #define WIDTH      640
 #define HEIGHT     480
@@ -46,20 +48,10 @@ uint32_t start_ball(void *userdata, SDL_TimerID timerID, Uint32 interval)
     return 0;
 }
 
-void play_audio_stream(SDL_AudioStream *stream, uint8_t *data, uint32_t data_len)
-{
-    if (SDL_GetAudioStreamQueued(stream) < (int)data_len)
-        SDL_PutAudioStreamData(stream, data, data_len);
-}
-
 int main(void)
 {
     uint8_t exit_code = EXIT_SUCCESS;
 
-    uint8_t *snd_hit_data = NULL;
-    uint8_t *snd_score_data = NULL;
-    uint32_t snd_hit_data_len = 0;
-    uint32_t snd_score_data_len = 0;
     uint32_t left_score = 0;
     uint32_t right_score = 0;
     uint64_t last = 0;
@@ -77,11 +69,6 @@ int main(void)
     SDL_Event event = {0};
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    
-    SDL_AudioSpec snd_hit_spec;
-    SDL_AudioSpec snd_score_spec;
-    SDL_AudioStream *snd_hit_stream = NULL;
-    SDL_AudioStream *snd_score_stream = NULL;
 
     SDL_FRect ball = {
         .w = BALL_SIZE,
@@ -101,6 +88,9 @@ int main(void)
         .x = WIDTH - PADDLE_WIDTH - BALL_SIZE * 2.0f,
         .y = HEIGHT / 2.0f - PADDLE_HEIGHT / 2.0f
     };
+
+    sound_t snd_hit;
+    sound_t snd_score;
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
@@ -122,35 +112,17 @@ int main(void)
         EXIT_ERR;  
     }
 
-    if (!SDL_LoadWAV("res/sound/hit.wav", &snd_hit_spec, &snd_hit_data, &snd_hit_data_len))
+    if (!sound_init(&snd_hit, "res/sound/hit.wav", SND_HIT_VOLUME))
     {
-        SDL_Log("SDL_LoadWAV() failed: %s", SDL_GetError());
+        SDL_Log("Failed to initialize hit sound");
         EXIT_ERR;
     }
 
-    if (!SDL_LoadWAV("res/sound/score.wav", &snd_score_spec, &snd_score_data, &snd_score_data_len))
+    if (!sound_init(&snd_score, "res/sound/score.wav", SND_SCORE_VOLUME))
     {
-        SDL_Log("SDL_LoadWAV() failed: %s", SDL_GetError());
+        SDL_Log("Failed to initialize score sound");
         EXIT_ERR;
     }
-
-    snd_hit_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &snd_hit_spec, NULL, NULL);
-    if (snd_hit_stream == NULL)
-    {
-        SDL_Log("SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
-        EXIT_ERR;
-    }
-    SDL_ResumeAudioStreamDevice(snd_hit_stream);
-    SDL_SetAudioStreamGain(snd_hit_stream, SND_HIT_VOLUME);
-
-    snd_score_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &snd_score_spec, NULL, NULL);
-    if (snd_score_stream == NULL)
-    {
-        SDL_Log("SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
-        EXIT_ERR;
-    }
-    SDL_ResumeAudioStreamDevice(snd_score_stream);
-    SDL_SetAudioStreamGain(snd_score_stream, SND_SCORE_VOLUME);
 
     SDL_AddTimer(BALL_COOLDOWN, start_ball, &ball_on_cooldown);
 
@@ -180,20 +152,20 @@ int main(void)
         {
             ball.x = left_paddle.x + BALL_SIZE + 1.0f;
             ball_dx *= -1;
-            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
+            sound_play(&snd_hit);
         }
 
         if (SDL_HasRectIntersectionFloat(&ball, &right_paddle))
         {
             ball.x = right_paddle.x - BALL_SIZE - 1.0f;
             ball_dx *= -1;
-            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
+            sound_play(&snd_hit);
         }
 
         if (ball.y <= 0.0f || ball.y + BALL_SIZE >= HEIGHT)
         {
             ball_dy *= -1;
-            play_audio_stream(snd_hit_stream, snd_hit_data, snd_hit_data_len);
+            sound_play(&snd_hit);
         }
 
         if (!ball_on_cooldown)
@@ -208,7 +180,7 @@ int main(void)
             left_score++;
             ball_dx *= -1;
 
-            play_audio_stream(snd_score_stream, snd_score_data, snd_score_data_len);
+            sound_play(&snd_score);
 
             ball_on_cooldown = true;
             ball.x = BOARD_CENTER_X - BALL_SIZE / 2.0f;
@@ -222,7 +194,7 @@ int main(void)
             right_score++;
             ball_dx *= -1;
 
-            play_audio_stream(snd_score_stream, snd_score_data, snd_score_data_len);
+            sound_play(&snd_score);
 
             ball_on_cooldown = true;
             ball.x = BOARD_CENTER_X - BALL_SIZE / 2.0f;
@@ -260,10 +232,8 @@ int main(void)
     }
 
 exit:
-    SDL_DestroyAudioStream(snd_hit_stream);
-    SDL_DestroyAudioStream(snd_score_stream);
-    SDL_free(snd_hit_data);
-    SDL_free(snd_score_data);
+    sound_destroy(&snd_hit);
+    sound_destroy(&snd_score);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
