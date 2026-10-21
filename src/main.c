@@ -1,6 +1,6 @@
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <SDL3/SDL.h>
 
 #include "sound.h"
@@ -174,7 +174,7 @@ int main(void)
             ball.y += BALL_SPEED * delta * ball_dy;
         }
 
-        /* Check if the left or right scored */
+        /* Check if the left or right paddle scored */
         if (ball.x > WIDTH)
         {
             left_score++;
