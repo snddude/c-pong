@@ -222,6 +222,10 @@ int main(void)
                 SDL_RenderLine(renderer, BOARD_CENTER_X, segment_start, BOARD_CENTER_X, segment_start + NET_SEGMENT_HEIGHT);
             }
 
+        /* Render top and bottom border */
+        SDL_RenderLine(renderer, 0.0f, 0.0f, WIDTH, 0.0f);
+        SDL_RenderLine(renderer, 0.0f, HEIGHT - 1.0f, WIDTH, HEIGHT - 1.0f);
+
         /* Render the paddles and the ball */
         SDL_RenderFillRect(renderer, &left_paddle);
         SDL_RenderFillRect(renderer, &right_paddle);
