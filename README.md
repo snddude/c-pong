@@ -16,9 +16,7 @@ A simple pong clone written in C using SDL3.
 
 ```bash
 git clone https://github.com/snddude/c-pong && cd c-pong
-mkdir build && cd build
-cmake .. && make
-cd dist/ && ./pong
+./scripts/build.sh && ./build/dist/pong
 ```
 
 ## License
